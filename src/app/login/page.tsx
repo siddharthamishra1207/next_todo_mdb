@@ -16,7 +16,7 @@ export default function LoginPage() {
       router.push("/view");
     } catch (err: unknown) {
     if (axios.isAxiosError(err)) {
-      setError(err.response?.data?.error || "Signup failed");
+      setError(err.response?.data?.error || "login failed");
       return;
     }
 

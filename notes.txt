@@ -1,0 +1,85 @@
+🧠 LOGIC MAP FOR AUTH + TASK DASHBOARD SYSTEM
+
+1️⃣ User Flow: Entry Point
+   User Visits Site ─▶ / 
+                └─▶ middleware.ts checks token
+                          │
+              ┌───────────┴────────────┐
+              │                        │
+          token exists           token missing
+              │                        │
+       redirect to /view         redirect to /login
+
+2️⃣ Authentication Flow
+     Login Page (email, password) ─▶ axios POST /api/auth/login
+                                      │
+                                Validate user
+                                Generate JWT
+                                Set token cookie
+
+    Signup Page (username, email, password) ─▶ axios POST /api/auth/signup
+                                      │
+                                 Create user in DB
+                                 Redirect to /login
+
+    Logout ─▶ axios GET /api/auth/logout
+        └─▶ Clear token cookie
+
+3️⃣ Protected Route: /view
+    /view ─▶ middleware.ts
+      └─▶ if token valid → allow access
+      └─▶ if token invalid → redirect to /login
+
+4️⃣ Dashboard Page Logic (/view/page.tsx)
+
+ On load:
+  ├── axios.get(/api/userinfo) → Set { username, email }
+  └── axios.get(/api/run/taskview) → Load user’s tasks
+
+On Add Task:
+  └── axios.post(/api/run/tasksave) with task data
+      └─▶ backend verifies user from token
+      └─▶ save task with userId
+
+On Edit Task:
+  └── click [Edit] → show modal with existing data
+      └── axios.put(/api/run/taskupdate/:id)
+          └─▶ backend checks task belongs to user
+          └─▶ update task in DB
+
+On Delete Task:
+  └── axios.delete(/api/run/taskdel/:id)
+      └─▶ backend checks task belongs to user
+      └─▶ delete task from DB
+
+On Logout:
+  └── axios.get(/api/auth/logout)
+      └─▶ clear cookie
+      └─▶ redirect to /login
+
+
+5️⃣ Backend API Summary
+| Endpoint                  | Method | Purpose                | Protected? |
+| ------------------------- | ------ | ---------------------- | ---------- |
+| `/api/auth/login`         | POST   | User login             | ❌          |
+| `/api/auth/signup`        | POST   | User registration      | ❌          |
+| `/api/auth/logout`        | GET    | Clear token            | ✅          |
+| `/api/userinfo`           | GET    | Get user info from JWT | ✅          |
+| `/api/run/taskview`       | GET    | Get tasks for user     | ✅          |
+| `/api/run/tasksave`       | POST   | Save new task          | ✅          |
+| `/api/run/taskupdate/:id` | PUT    | Update user task       | ✅          |
+| `/api/run/taskdel/:id`    | DELETE | Delete user task       | ✅          |
+
+
+6️⃣ Data Model Relationship
+ User
+├── _id
+├── username
+├── email
+└── password (hashed)
+
+Task
+├── _id
+├── taskTitle
+├── taskDetails
+└── userId (ref to User._id)
