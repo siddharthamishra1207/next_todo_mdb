@@ -6,9 +6,11 @@ import { getDataFromToken } from "@/helper/getDataFromToken"; // Adjust import p
 
 connect();
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest) {
   try {
-    const taskId = params.id;
+     const url = new URL(request.url);
+    const taskId = url.pathname.split("/").pop() || ""; 
+    
 
     // 1. Validate task ID
     if (!Types.ObjectId.isValid(taskId)) {
